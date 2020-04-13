@@ -21,7 +21,8 @@ public class SettingsActivity extends Activity {
 
         setContentView(R.layout.activity_settings);
 
-        String[] cities = new String[] {getIntent().getStringExtra("City"), "Moscow", "Saint Petersburg", "Vladivostok", "Novosibirsk", "Yakutsk"};
+//        String[] cities = new String[] {getIntent().getStringExtra("City"), "Moscow", "Saint Petersburg", "Vladivostok", "Novosibirsk", "Yakutsk"};
+        String[] cities = new String[] {"Khabarovsk", "Moscow", "Saint Petersburg", "Vladivostok", "Novosibirsk", "Yakutsk"};
         ArrayAdapter<String> stringArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, cities);
 
         ListView listView = findViewById(R.id.listCities);
