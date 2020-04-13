@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">LessonSecond_GeekBrains</string>
+    <string name="cities">Cities</string>
+    <string name="settings">Settings</string>
 </resources>
