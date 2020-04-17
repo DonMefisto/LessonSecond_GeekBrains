@@ -1,35 +1,35 @@
 package com.mefistophel.lessonsecond_geekbrains;
 
+import android.content.Intent;
+import android.icu.text.DateFormat;
+import android.icu.text.SimpleDateFormat;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
-import android.content.ClipData;
-import android.content.Intent;
-import android.graphics.drawable.Drawable;
-import android.icu.text.DateFormat;
-import android.icu.text.SimpleDateFormat;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ListView;
-import android.widget.TextView;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Locale;
-import java.util.zip.Inflater;
 
 public class MainActivity extends AppCompatActivity {
 
     public final static int SELECTED_CITY = 0;
     private TextView txtTime;
     private TextView txtTemp;
+    private TextView txtFeelsLike;
     private TextView txtCity;
     private ListView listTemp;
     private ConstraintLayout constraintLayout;
@@ -40,9 +40,46 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         initView();
-        setDefaultValue();
 
+        updateWeather();
+
+        setDefaultValue();
     }
+
+    private void updateWeather() {
+        new Thread(){
+            public void run() {
+                final JSONObject json = RequestWeather.getJSON();
+                Message msg = handler.obtainMessage();
+                Bundle bundle = new Bundle();
+                if (json == null) {
+                    bundle.putString("temp", "Sorry, we are trying to pull data, but we can't.");
+                } else {
+                    try {
+                        JSONObject factJson = json.getJSONObject("fact");
+                        bundle.putString("temp", factJson.getInt("temp") + "°");
+                        bundle.putString("feelsLike", factJson.getInt("feels_like") + "°");
+                    } catch (JSONException e) {
+                        bundle.putString("Key", "Sorry, we are trying to pull data, but we can't.");
+                    }
+                }
+                msg.setData(bundle);
+                handler.sendMessage(msg);
+            }
+        }.start();
+    }
+
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            Bundle bundle = msg.getData();
+            txtTemp = findViewById(R.id.txtTemp);
+            txtTemp.setText(bundle.getString("temp"));
+            txtFeelsLike = findViewById(R.id.txtTempLike);
+            txtFeelsLike.setText(bundle.getString("feelsLike"));
+        }
+    };
+
 
     private void setDefaultValue() {
         //current time for user
@@ -57,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
             constraintLayout.setBackgroundResource(R.drawable.cloud_day_sky);
 
         //current temperature
-        txtTemp.setText("18°");
+        //txtTemp.setText("18°");
 
         //planned temperature
         timeFormat = new SimpleDateFormat("HH:00", Locale.getDefault());
