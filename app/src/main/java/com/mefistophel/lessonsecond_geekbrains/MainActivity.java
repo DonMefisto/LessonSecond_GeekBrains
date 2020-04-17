@@ -6,12 +6,14 @@ import android.icu.text.SimpleDateFormat;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,6 +35,28 @@ public class MainActivity extends AppCompatActivity {
     private TextView txtCity;
     private ListView listTemp;
     private ConstraintLayout constraintLayout;
+    private static Singleton savedData;
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Toast.makeText(getApplicationContext(), "We are stopped.", Toast.LENGTH_SHORT).show();
+        Log.d("LSL", "We are stopped.");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Toast.makeText(getApplicationContext(), "Oh, no.. we are destroyed.", Toast.LENGTH_SHORT).show();
+        Log.d("LSL", "Oh, no.. We are destroyed.");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Toast.makeText(getApplicationContext(), "We are started.", Toast.LENGTH_SHORT).show();
+        Log.d("LSL", "We are started.");
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,9 +65,19 @@ public class MainActivity extends AppCompatActivity {
 
         initView();
 
-        updateWeather();
+        if (savedInstanceState == null)
+        {
+            Toast.makeText(getApplicationContext(), "First run.", Toast.LENGTH_SHORT).show();
+            Log.d("LSL", "First run.");
+            updateWeather();
+        }
+        else{
+            Toast.makeText(getApplicationContext(), "More than one.", Toast.LENGTH_SHORT).show();
+            Log.d("LSL", "More than one.");
+        }
 
         setDefaultValue();
+
     }
 
     private void updateWeather() {
@@ -73,10 +107,9 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void handleMessage(Message msg) {
             Bundle bundle = msg.getData();
-            txtTemp = findViewById(R.id.txtTemp);
-            txtTemp.setText(bundle.getString("temp"));
-            txtFeelsLike = findViewById(R.id.txtTempLike);
-            txtFeelsLike.setText(bundle.getString("feelsLike"));
+            savedData = Singleton.getInstance(bundle.getString("temp"), bundle.getString("feelsLike"));
+            txtTemp.setText(savedData.temp);
+            txtFeelsLike.setText(savedData.tempFeelsLike);
         }
     };
 
@@ -94,7 +127,14 @@ public class MainActivity extends AppCompatActivity {
             constraintLayout.setBackgroundResource(R.drawable.cloud_day_sky);
 
         //current temperature
-        //txtTemp.setText("18°");
+        if (savedData == null) {
+            txtTemp.setText("0°");
+            txtFeelsLike.setText("0°");
+        }
+        else{
+            txtTemp.setText(savedData.temp);
+            txtFeelsLike.setText(savedData.tempFeelsLike);
+        }
 
         //planned temperature
         timeFormat = new SimpleDateFormat("HH:00", Locale.getDefault());
@@ -117,6 +157,7 @@ public class MainActivity extends AppCompatActivity {
         txtCity = findViewById(R.id.txtCity);
         listTemp= findViewById(R.id.listTemp);
         constraintLayout = findViewById(R.id.constLayoutMain);
+        txtFeelsLike     = findViewById(R.id.txtTempLike);
    }
 
     @Override
