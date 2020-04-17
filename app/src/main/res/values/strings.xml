@@ -6,4 +6,8 @@
     <string name="zeroTime">00:00</string>
     <string name="defaultCity">Khabarovsk</string>
     <string name="zeroWind">Что-то про ветер и давление</string>
+    <string name="feelsLike">feels like</string>
+
+    <string name="app_id">b985dff9-b536-46fc-8677-f06c5f457dda</string>
+    <string name="tempLike">0°</string>
 </resources>
