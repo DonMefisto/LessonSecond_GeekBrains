@@ -38,6 +38,7 @@
         android:layout_height="wrap_content"
         android:text="@string/zeroTemp"
         android:textSize="54sp"
+        android:onClick="clickTxtTemp"
         app:layout_constraintBottom_toBottomOf="@id/guideline2"
         app:layout_constraintHorizontal_bias="0.36"
         app:layout_constraintLeft_toLeftOf="parent"

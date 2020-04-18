@@ -3,12 +3,14 @@ package com.mefistophel.lessonsecond_geekbrains;
 import android.content.Intent;
 import android.icu.text.DateFormat;
 import android.icu.text.SimpleDateFormat;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -33,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView txtCity;
     private ListView listTemp;
     private ConstraintLayout constraintLayout;
+    private static Singleton savedData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,9 +44,11 @@ public class MainActivity extends AppCompatActivity {
 
         initView();
 
-        updateWeather();
+        if (savedInstanceState == null)
+            updateWeather();
 
         setDefaultValue();
+
     }
 
     private void updateWeather() {
@@ -73,13 +78,11 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void handleMessage(Message msg) {
             Bundle bundle = msg.getData();
-            txtTemp = findViewById(R.id.txtTemp);
-            txtTemp.setText(bundle.getString("temp"));
-            txtFeelsLike = findViewById(R.id.txtTempLike);
-            txtFeelsLike.setText(bundle.getString("feelsLike"));
+            savedData = Singleton.getInstance(bundle.getString("temp"), bundle.getString("feelsLike"));
+            txtTemp.setText(savedData.temp);
+            txtFeelsLike.setText(savedData.tempFeelsLike);
         }
     };
-
 
     private void setDefaultValue() {
         //current time for user
@@ -94,7 +97,14 @@ public class MainActivity extends AppCompatActivity {
             constraintLayout.setBackgroundResource(R.drawable.cloud_day_sky);
 
         //current temperature
-        //txtTemp.setText("18°");
+        if (savedData == null) {
+            txtTemp.setText("0°");
+            txtFeelsLike.setText("0°");
+        }
+        else{
+            txtTemp.setText(savedData.temp);
+            txtFeelsLike.setText(savedData.tempFeelsLike);
+        }
 
         //planned temperature
         timeFormat = new SimpleDateFormat("HH:00", Locale.getDefault());
@@ -114,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
     private void initView() {
         txtTime = findViewById(R.id.txtTime);
         txtTemp = findViewById(R.id.txtTemp);
+        txtFeelsLike = findViewById(R.id.txtTempLike);
         txtCity = findViewById(R.id.txtCity);
         listTemp= findViewById(R.id.listTemp);
         constraintLayout = findViewById(R.id.constLayoutMain);
@@ -154,5 +165,10 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == SELECTED_CITY)
             if (resultCode == RESULT_OK)
                 txtCity.setText(data.getStringExtra(SettingsActivity.CITY));
+    }
+
+    public void clickTxtTemp(View view) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://yandex.ru/pogoda/" + "khabarovsk" + "?" + "lat=48.469084&lon=135.078262"));
+        startActivity(intent);
     }
 }
