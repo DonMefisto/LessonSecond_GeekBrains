@@ -3,6 +3,8 @@ package com.mefistophel.lessonsecond_geekbrains;
 import android.content.Intent;
 import android.icu.text.DateFormat;
 import android.icu.text.SimpleDateFormat;
+import android.location.Address;
+import android.location.Geocoder;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -13,6 +15,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,7 +25,9 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
@@ -47,21 +52,39 @@ public class MainActivity extends AppCompatActivity {
 
         initView();
 
-        if (savedInstanceState == null)
-            requestDataFromAPI();
-
         setDefaultValue();
+
+        if (savedInstanceState == null)
+            requestDataFromAPI(getCityCoordinates());
     }
 
-    private void requestDataFromAPI() {
-        requestDataAsync = new RequestDataAsync();
-        requestDataAsync.execute(txtCity.getText().toString());
+    private String getCityCoordinates() {
+        Geocoder coder = new Geocoder(getApplicationContext());
+        try {
+            List<Address> addresses = coder.getFromLocationName(txtCity.getText().toString(), 1);
+            Address location = addresses.get(0);
+
+            return "lat" + location.getLatitude() + "&" + "lon" + location.getLongitude();
+        } catch (IOException e) {
+            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+        }
+        return "NoCity";
+    }
+
+    private void requestDataFromAPI(String coordinates) {
+        if (coordinates.contentEquals("NoCity"))
+            Toast.makeText(getApplicationContext(), "Sorry, but we could not find your city coordinates.", Toast.LENGTH_LONG).show();
+        else {
+            requestDataAsync = new RequestDataAsync();
+            requestDataAsync.execute(coordinates);
+            Toast.makeText(getApplicationContext(), coordinates, Toast.LENGTH_LONG).show();
+        }
     }
 
     class RequestDataAsync extends AsyncTask < String, Void ,JSONObject> {
         @Override
-        protected JSONObject doInBackground(String... city) {
-            final JSONObject json = RequestWeather.getJSON();
+        protected JSONObject doInBackground(String... coordinates) {
+            final JSONObject json = RequestWeather.getJSON(coordinates[0]);
             return json;
         }
 
@@ -70,9 +93,19 @@ public class MainActivity extends AppCompatActivity {
             super.onPostExecute(json);
             try {
                 JSONObject factJson = json.getJSONObject("fact");
-                savedData = Singleton.getInstance(factJson.getInt("temp") + "°", factJson.getInt("feels_like") + "°");
-                txtTemp.setText(savedData.temp);
-                txtFeelsLike.setText(savedData.tempFeelsLike);
+                Toast.makeText(getApplicationContext(), "hello", Toast.LENGTH_LONG).show();
+                if (savedData == null) {
+                    savedData = Singleton.getInstance(factJson.getInt("temp") + "°", factJson.getInt("feels_like") + "°", txtCity.getText().toString());
+                    txtTemp.setText(savedData.temp);
+                    txtFeelsLike.setText(savedData.tempFeelsLike);
+                }
+                else
+                {
+                    savedData.setTemp(factJson.getInt("temp") + "°");
+                    savedData.setTempFeelsLike(factJson.getInt("feels_like") + "°");
+                    txtTemp.setText(savedData.temp);
+                    txtFeelsLike.setText(savedData.tempFeelsLike);
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -158,12 +191,17 @@ public class MainActivity extends AppCompatActivity {
 
         TextView txtCity = findViewById(R.id.txtCity);
         if (requestCode == SELECTED_CITY)
-            if (resultCode == RESULT_OK)
+            if (resultCode == RESULT_OK) {
                 txtCity.setText(data.getStringExtra(SettingsActivity.CITY));
+                if (!savedData.city.contentEquals(txtCity.getText())) {
+                    savedData.setCity(txtCity.getText().toString());
+                    requestDataFromAPI(getCityCoordinates());
+                }
+            }
     }
 
     public void clickTxtTemp(View view) {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://yandex.ru/pogoda/" + "khabarovsk" + "?" + "lat=48.469084&lon=135.078262"));
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://yandex.ru/pogoda/" + txtCity.getText() + "?" + getCityCoordinates()));
         startActivity(intent);
     }
 }
