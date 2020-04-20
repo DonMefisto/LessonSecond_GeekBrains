@@ -1,9 +1,11 @@
 package com.mefistophel.lessonsecond_geekbrains;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.icu.text.DateFormat;
 import android.icu.text.SimpleDateFormat;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -29,13 +31,17 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity {
 
     public final static int SELECTED_CITY = 0;
+
     private TextView txtTime;
     private TextView txtTemp;
     private TextView txtFeelsLike;
     private TextView txtCity;
     private ListView listTemp;
+
     private ConstraintLayout constraintLayout;
     private static Singleton savedData;
+
+    private RequestDataAsync requestDataAsync;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,44 +51,36 @@ public class MainActivity extends AppCompatActivity {
         initView();
 
         if (savedInstanceState == null)
-            updateWeather();
+            requestDataFromAPI();
 
         setDefaultValue();
-
     }
 
-    private void updateWeather() {
-        new Thread(){
-            public void run() {
-                final JSONObject json = RequestWeather.getJSON();
-                Message msg = handler.obtainMessage();
-                Bundle bundle = new Bundle();
-                if (json == null) {
-                    bundle.putString("temp", "Sorry, we are trying to pull data, but we can't.");
-                } else {
-                    try {
-                        JSONObject factJson = json.getJSONObject("fact");
-                        bundle.putString("temp", factJson.getInt("temp") + "°");
-                        bundle.putString("feelsLike", factJson.getInt("feels_like") + "°");
-                    } catch (JSONException e) {
-                        bundle.putString("Key", "Sorry, we are trying to pull data, but we can't.");
-                    }
-                }
-                msg.setData(bundle);
-                handler.sendMessage(msg);
-            }
-        }.start();
+    private void requestDataFromAPI() {
+        requestDataAsync = new RequestDataAsync();
+        requestDataAsync.execute(txtCity.getText().toString());
     }
 
-    Handler handler = new Handler() {
+    class RequestDataAsync extends AsyncTask < String, Void ,JSONObject> {
         @Override
-        public void handleMessage(Message msg) {
-            Bundle bundle = msg.getData();
-            savedData = Singleton.getInstance(bundle.getString("temp"), bundle.getString("feelsLike"));
-            txtTemp.setText(savedData.temp);
-            txtFeelsLike.setText(savedData.tempFeelsLike);
+        protected JSONObject doInBackground(String... city) {
+            final JSONObject json = RequestWeather.getJSON();
+            return json;
         }
-    };
+
+        @Override
+        protected void onPostExecute(JSONObject json) {
+            super.onPostExecute(json);
+            try {
+                JSONObject factJson = json.getJSONObject("fact");
+                savedData = Singleton.getInstance(factJson.getInt("temp") + "°", factJson.getInt("feels_like") + "°");
+                txtTemp.setText(savedData.temp);
+                txtFeelsLike.setText(savedData.tempFeelsLike);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     private void setDefaultValue() {
         //current time for user
