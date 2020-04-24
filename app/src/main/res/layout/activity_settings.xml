@@ -10,10 +10,17 @@
         android:ems="10"
         android:inputType="textPersonName" />
 
+    <FrameLayout
+        android:id="@+id/frameCities"
+        android:layout_width="match_parent"
+        android:layout_height="353dp">
+
+    </FrameLayout>
+
     <ListView
         android:id="@+id/listCities"
         android:layout_width="match_parent"
-        android:layout_height="330dp" >
+        android:layout_height="330dp">
 
     </ListView>
 </LinearLayout>

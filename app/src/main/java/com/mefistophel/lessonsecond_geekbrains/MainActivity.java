@@ -21,6 +21,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.FragmentTransaction;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -56,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (savedInstanceState == null)
             requestDataFromAPI(getCityCoordinates());
+
     }
 
     private String getCityCoordinates() {
@@ -63,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             List<Address> addresses = coder.getFromLocationName(txtCity.getText().toString(), 1);
             Address location = addresses.get(0);
+            Toast.makeText(getApplicationContext(), "lat" + location.getLatitude() + "&" + "lon" + location.getLongitude(), Toast.LENGTH_LONG).show();
 
             return "lat" + location.getLatitude() + "&" + "lon" + location.getLongitude();
         } catch (IOException e) {
@@ -77,7 +80,6 @@ public class MainActivity extends AppCompatActivity {
         else {
             requestDataAsync = new RequestDataAsync();
             requestDataAsync.execute(coordinates);
-            Toast.makeText(getApplicationContext(), coordinates, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -93,7 +95,6 @@ public class MainActivity extends AppCompatActivity {
             super.onPostExecute(json);
             try {
                 JSONObject factJson = json.getJSONObject("fact");
-                Toast.makeText(getApplicationContext(), "hello", Toast.LENGTH_LONG).show();
                 if (savedData == null) {
                     savedData = Singleton.getInstance(factJson.getInt("temp") + "°", factJson.getInt("feels_like") + "°", txtCity.getText().toString());
                     txtTemp.setText(savedData.temp);
