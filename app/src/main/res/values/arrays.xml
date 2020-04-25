@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="cities">
+        <item>Khabarovsk</item>
+        <item>Moscow</item>
+        <item>Saint Petersburg</item>
+        <item>Vladivostok</item>
+        <item>Novosibirsk</item>
+        <item>Yakutsk</item>
+    </string-array>
+</resources>
