@@ -56,73 +56,84 @@
         app:layout_constraintHorizontal_bias="0.73"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <ListView
-        android:id="@+id/listTemp"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginBottom="60dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="@id/guideline"
-        app:layout_constraintTop_toTopOf="@id/guideline3"
-        app:layout_constraintVertical_bias="0.0" />
-
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline2"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="@id/guideline"
-        app:layout_constraintGuide_begin="343dp" />
+        app:layout_constraintGuide_begin="326dp" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_begin="111dp" />
+        app:layout_constraintGuide_begin="74dp" />
 
     <TextView
         android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="97dp"
-        android:layout_marginTop="256dp"
-        android:layout_marginEnd="104dp"
-        android:layout_marginBottom="178dp"
+        android:layout_width="0dp"
+        android:layout_height="42dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="80dp"
+        android:layout_marginEnd="40dp"
+        android:layout_marginBottom="50dp"
         android:text="@string/zeroWind"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/listTemp"
+        app:layout_constraintBottom_toBottomOf="@id/guideline5"
+        app:layout_constraintEnd_toStartOf="@+id/recViewTemp"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtCity" />
+        app:layout_constraintTop_toBottomOf="@+id/txtCity"
+        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/txtFeelsLike"
         android:layout_width="wrap_content"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginTop="140dp"
-        android:layout_marginEnd="65dp"
         android:layout_marginBottom="59dp"
         android:text="@string/feelsLike"
         app:layout_constraintBottom_toTopOf="@+id/txtTime"
-        app:layout_constraintEnd_toStartOf="@+id/listTemp"
         app:layout_constraintStart_toEndOf="@+id/txtTemp"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/txtTempLike"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginTop="7dp"
-        android:layout_marginEnd="70dp"
         android:layout_marginBottom="33dp"
         android:text="@string/tempLike"
         app:layout_constraintBottom_toTopOf="@+id/txtTime"
-        app:layout_constraintEnd_toStartOf="@+id/listTemp"
         app:layout_constraintStart_toEndOf="@+id/txtTemp"
         app:layout_constraintTop_toBottomOf="@+id/txtFeelsLike" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recViewTemp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@id/guideline5"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@id/guideline"
+        app:layout_constraintTop_toBottomOf="@id/guideline3"
+        tools:listitem="@layout/temp_for_hour" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline5"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="473dp"
+        android:layout_marginEnd="411dp"
+        android:layout_marginBottom="250dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintGuide_begin="410dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
