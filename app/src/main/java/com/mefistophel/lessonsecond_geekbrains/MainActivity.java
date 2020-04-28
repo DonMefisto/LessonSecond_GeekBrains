@@ -22,6 +22,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,7 +42,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView txtTemp;
     private TextView txtFeelsLike;
     private TextView txtCity;
-    private ListView listTemp;
+    private RecyclerView recViewTemp;
+    private SocnetAdapter tempAdapter;
 
     private ConstraintLayout constraintLayout;
     private static Singleton savedData;
@@ -95,18 +99,10 @@ public class MainActivity extends AppCompatActivity {
             super.onPostExecute(json);
             try {
                 JSONObject factJson = json.getJSONObject("fact");
-                if (savedData == null) {
-                    savedData = Singleton.getInstance(factJson.getInt("temp") + "°", factJson.getInt("feels_like") + "°", txtCity.getText().toString());
-                    txtTemp.setText(savedData.temp);
-                    txtFeelsLike.setText(savedData.tempFeelsLike);
-                }
-                else
-                {
-                    savedData.setTemp(factJson.getInt("temp") + "°");
-                    savedData.setTempFeelsLike(factJson.getInt("feels_like") + "°");
-                    txtTemp.setText(savedData.temp);
-                    txtFeelsLike.setText(savedData.tempFeelsLike);
-                }
+                savedData.setTemp(factJson.getInt("temp") + "°");
+                savedData.setTempFeelsLike(factJson.getInt("feels_like") + "°");
+                txtTemp.setText(savedData.temp);
+                txtFeelsLike.setText(savedData.tempFeelsLike);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -114,6 +110,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setDefaultValue() {
+        savedData = new Singleton("0°", "0°", "Khabarovsk");
+
         //current time for user
         Calendar cal = Calendar.getInstance();
         DateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
@@ -126,25 +124,26 @@ public class MainActivity extends AppCompatActivity {
             constraintLayout.setBackgroundResource(R.drawable.cloud_day_sky);
 
         //current temperature
-        if (savedData == null) {
-            txtTemp.setText("0°");
-            txtFeelsLike.setText("0°");
-        }
-        else{
-            txtTemp.setText(savedData.temp);
-            txtFeelsLike.setText(savedData.tempFeelsLike);
-        }
+        txtTemp.setText(savedData.temp);
+        txtFeelsLike.setText(savedData.tempFeelsLike);
 
         //planned temperature
         timeFormat = new SimpleDateFormat("HH:00", Locale.getDefault());
-
         String[] temps = new String[23];
         for (int i = 1; i < 24; i++) {
             cal.add(Calendar.HOUR, 1);
             temps[i - 1] = timeFormat.format(cal.getTime()) + "    " + (i+18) + "°";
         }
-        ArrayAdapter<String> stringArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, temps);
-        listTemp.setAdapter(stringArrayAdapter);
+        recViewTemp.setHasFixedSize(true);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
+        recViewTemp.setLayoutManager(layoutManager);
+        tempAdapter = new SocnetAdapter(temps);
+        recViewTemp.setAdapter(tempAdapter);
+
+        //set separator
+        DividerItemDecoration itemDecoration = new DividerItemDecoration(getApplicationContext(), LinearLayoutManager.VERTICAL);
+        itemDecoration.setDrawable(getDrawable(R.drawable.separator));
+        recViewTemp.addItemDecoration(itemDecoration);
 
         //default city - Khabarovsk
         txtCity.setText("Khabarovsk");
@@ -154,9 +153,9 @@ public class MainActivity extends AppCompatActivity {
         txtTime = findViewById(R.id.txtTime);
         txtTemp = findViewById(R.id.txtTemp);
         txtFeelsLike = findViewById(R.id.txtTempLike);
-        txtCity = findViewById(R.id.txtCity);
-        listTemp= findViewById(R.id.listTemp);
+        txtCity      = findViewById(R.id.txtCity);
         constraintLayout = findViewById(R.id.constLayoutMain);
+        recViewTemp  = findViewById(R.id.recViewTemp);
    }
 
     @Override
