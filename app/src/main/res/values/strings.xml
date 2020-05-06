@@ -10,7 +10,5 @@
 
     <string name="app_id">b985dff9-b536-46fc-8677-f06c5f457dda</string>
     <string name="tempLike">0°</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="hintSelectedCity">Please input city here</string>
 </resources>
