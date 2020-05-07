@@ -2,6 +2,7 @@ package com.mefistophel.lessonsecond_geekbrains;
 
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -12,19 +13,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.android.material.snackbar.Snackbar;
+import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.Observer;
+import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.Publisher;
+import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.PublisherGetter;
 
-/**
- * A simple {@link Fragment} subclass.
- */
-public class CityList extends Fragment implements Observer{
+
+public class CityList extends Fragment implements Observer {
 
     private Publisher publisher;
 
     public CityList() {
-        // Required empty public constructor
     }
 
 
@@ -48,7 +49,7 @@ public class CityList extends Fragment implements Observer{
         publisher = ((PublisherGetter) context).getPublisher();
     }
 
-    private void initListCities(LinearLayout view) {
+    private void initListCities(final LinearLayout view) {
         LinearLayout linearLayout = view;
         String[] cities = getResources().getStringArray(R.array.cities);
 
@@ -62,7 +63,15 @@ public class CityList extends Fragment implements Observer{
             txtNameCity.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    publisher.notify(txtNameCity.getText().toString());
+                    Snackbar snackbar = Snackbar
+                            .make(view, "Do you want to change city to " + txtNameCity.getText().toString() + "?", Snackbar.LENGTH_LONG)
+                            .setAction("Yes", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    publisher.notify(txtNameCity.getText().toString());
+                                }
+                            });
+                    snackbar.show();
                 }
             });
         }

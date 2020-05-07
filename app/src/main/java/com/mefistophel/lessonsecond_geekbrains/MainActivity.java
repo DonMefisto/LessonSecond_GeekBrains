@@ -1,6 +1,8 @@
 package com.mefistophel.lessonsecond_geekbrains;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.icu.text.DateFormat;
 import android.icu.text.SimpleDateFormat;
 import android.location.Address;
@@ -12,8 +14,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,10 +21,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.mefistophel.lessonsecond_geekbrains.data_weather.DataWeather;
+import com.mefistophel.lessonsecond_geekbrains.data_weather.TempForHour;
+import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.Observer;
+import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.Publisher;
+import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.PublisherGetter;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,119 +39,54 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements PublisherGetter, Observer {
 
-    public final static int SELECTED_CITY = 0;
+    private SharedPreferences shPreferences;
 
     private TextView txtTime;
     private TextView txtTemp;
     private TextView txtFeelsLike;
     private TextView txtCity;
     private RecyclerView recViewTemp;
-    private SocnetAdapter tempAdapter;
+    private WeatherAdapter tempAdapter;
 
     private ConstraintLayout constraintLayout;
-    private static Singleton savedData;
 
-    private RequestDataAsync requestDataAsync;
+    private DataWeather dataWeather;
+    private Publisher publisher = new Publisher();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        shPreferences = getSharedPreferences(Constants.PREFERENCES, Context.MODE_PRIVATE);
+
         initView();
-
         setDefaultValue();
-
-        if (savedInstanceState == null)
-            requestDataFromAPI(getCityCoordinates());
-
-    }
-
-    private String getCityCoordinates() {
-        Geocoder coder = new Geocoder(getApplicationContext());
-        try {
-            List<Address> addresses = coder.getFromLocationName(txtCity.getText().toString(), 1);
-            Address location = addresses.get(0);
-            Toast.makeText(getApplicationContext(), "lat" + location.getLatitude() + "&" + "lon" + location.getLongitude(), Toast.LENGTH_LONG).show();
-
-            return "lat" + location.getLatitude() + "&" + "lon" + location.getLongitude();
-        } catch (IOException e) {
-            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
-        }
-        return "NoCity";
-    }
-
-    private void requestDataFromAPI(String coordinates) {
-        if (coordinates.contentEquals("NoCity"))
-            Toast.makeText(getApplicationContext(), "Sorry, but we could not find your city coordinates.", Toast.LENGTH_LONG).show();
-        else {
-            requestDataAsync = new RequestDataAsync();
-            requestDataAsync.execute(coordinates);
-        }
-    }
-
-    class RequestDataAsync extends AsyncTask < String, Void ,JSONObject> {
-        @Override
-        protected JSONObject doInBackground(String... coordinates) {
-            final JSONObject json = RequestWeather.getJSON(coordinates[0]);
-            return json;
-        }
-
-        @Override
-        protected void onPostExecute(JSONObject json) {
-            super.onPostExecute(json);
-            try {
-                JSONObject factJson = json.getJSONObject("fact");
-                savedData.setTemp(factJson.getInt("temp") + "°");
-                savedData.setTempFeelsLike(factJson.getInt("feels_like") + "°");
-                txtTemp.setText(savedData.temp);
-                txtFeelsLike.setText(savedData.tempFeelsLike);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     private void setDefaultValue() {
-        savedData = new Singleton("0°", "0°", "Khabarovsk");
-
         //current time for user
         Calendar cal = Calendar.getInstance();
         DateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
         txtTime.setText(timeFormat.format(cal.getTime()));
 
-        int hour = cal.get(Calendar.HOUR);
-        if ( hour > 19 || hour < 7)
-            constraintLayout.setBackgroundResource(R.drawable.cloud_night_sky);
-        else
-            constraintLayout.setBackgroundResource(R.drawable.cloud_day_sky);
+        constraintLayout.setBackgroundResource(R.drawable.clear_night_sky);
 
         //current temperature
-        txtTemp.setText(savedData.temp);
-        txtFeelsLike.setText(savedData.tempFeelsLike);
-
-        //planned temperature
-        timeFormat = new SimpleDateFormat("HH:00", Locale.getDefault());
-        String[] temps = new String[23];
-        for (int i = 1; i < 24; i++) {
-            cal.add(Calendar.HOUR, 1);
-            temps[i - 1] = timeFormat.format(cal.getTime()) + "    " + (i+18) + "°";
-        }
-        recViewTemp.setHasFixedSize(true);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
-        recViewTemp.setLayoutManager(layoutManager);
-        tempAdapter = new SocnetAdapter(temps);
-        recViewTemp.setAdapter(tempAdapter);
-
-        //set separator
-        DividerItemDecoration itemDecoration = new DividerItemDecoration(getApplicationContext(), LinearLayoutManager.VERTICAL);
-        itemDecoration.setDrawable(getDrawable(R.drawable.separator));
-        recViewTemp.addItemDecoration(itemDecoration);
+        txtTemp.setText("0°");
+        txtFeelsLike.setText("0°");
 
         //default city - Khabarovsk
         txtCity.setText("Khabarovsk");
+
+        publisher.subscribe(MainActivity.this);
+
+        if (shPreferences.contains(Constants.PREFERENCES_CITY))
+            dataWeather = new DataWeather(shPreferences.getString(Constants.PREFERENCES_CITY, ""), MainActivity.this);
+        else
+            dataWeather = new DataWeather("Khabarovsk", MainActivity.this);
     }
 
     private void initView() {
@@ -174,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
 
                     TextView txtCity = findViewById(R.id.txtCity);
                     intentSettings.putExtra("City", txtCity.getText().toString());
-                    startActivityForResult(intentSettings, SELECTED_CITY);
+                    startActivityForResult(intentSettings, Constants.SELECTED_CITY);
                     break;
                 }
             default: {
@@ -189,19 +129,51 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        TextView txtCity = findViewById(R.id.txtCity);
-        if (requestCode == SELECTED_CITY)
-            if (resultCode == RESULT_OK) {
-                txtCity.setText(data.getStringExtra(SettingsActivity.CITY));
-                if (!savedData.city.contentEquals(txtCity.getText())) {
-                    savedData.setCity(txtCity.getText().toString());
-                    requestDataFromAPI(getCityCoordinates());
-                }
-            }
+        if (requestCode == Constants.SELECTED_CITY)
+            if (resultCode == RESULT_OK)
+                dataWeather.setCity(data.getStringExtra(Constants.CITY), MainActivity.this);
     }
 
     public void clickTxtTemp(View view) {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://yandex.ru/pogoda/" + txtCity.getText() + "?" + getCityCoordinates()));
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://yandex.ru/pogoda/" + txtCity.getText() + "?" + "lat" + dataWeather.getLatCity() + "&" + "lon" + dataWeather.getLonCity()));
         startActivity(intent);
     }
+
+    @Override
+    public void updateCity(String text) {
+        setViewDataFromDataWeather();
+    }
+
+    private void setViewDataFromDataWeather() {
+        txtCity.setText(dataWeather.getCity());
+        txtTemp.setText(dataWeather.getActualTemp());
+        txtFeelsLike.setText(dataWeather.getTempFeelsLike());
+
+        //planned temperature
+        Calendar cal = Calendar.getInstance();
+        String[] temps = new String[24];
+        for (int i = 1; i < 24-cal.get(Calendar.HOUR_OF_DAY); i++)
+            temps[i - 1] = dataWeather.getTempForHour(i+cal.get(Calendar.HOUR_OF_DAY));
+
+        recViewTemp.setHasFixedSize(true);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
+        recViewTemp.setLayoutManager(layoutManager);
+        tempAdapter = new WeatherAdapter(temps);
+        recViewTemp.setAdapter(tempAdapter);
+
+        //set separator
+        DividerItemDecoration itemDecoration = new DividerItemDecoration(getApplicationContext(), LinearLayoutManager.VERTICAL);
+        itemDecoration.setDrawable(getDrawable(R.drawable.separator));
+        recViewTemp.addItemDecoration(itemDecoration);
+
+        SharedPreferences.Editor editor = shPreferences.edit();
+        editor.putString(Constants.PREFERENCES_CITY, dataWeather.getCity());
+        editor.apply();
+    }
+
+    @Override
+    public Publisher getPublisher() {
+        return publisher;
+    }
+
 }

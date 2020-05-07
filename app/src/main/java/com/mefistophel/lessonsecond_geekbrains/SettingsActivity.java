@@ -5,9 +5,12 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class SettingsActivity extends AppCompatActivity implements PublisherGetter, Observer{
+import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.Observer;
+import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.Publisher;
+import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.PublisherGetter;
 
-    public final static String CITY = "com.mefistophel.lessonsecond_geekbrains.CITY";
+public class SettingsActivity extends AppCompatActivity implements PublisherGetter, Observer {
+
     private CityList fragmentCities;
     private Publisher publisher = new Publisher();
 
@@ -32,7 +35,7 @@ public class SettingsActivity extends AppCompatActivity implements PublisherGett
     @Override
     public void updateCity(String text) {
         Intent settingsIntent = new Intent();
-        settingsIntent.putExtra(CITY, text);
+        settingsIntent.putExtra(Constants.CITY, text);
         setResult(RESULT_OK, settingsIntent);
         finish();
     }

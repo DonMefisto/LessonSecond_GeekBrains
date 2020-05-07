@@ -1,4 +1,4 @@
-package com.mefistophel.lessonsecond_geekbrains;
+package com.mefistophel.lessonsecond_geekbrains.observer_city_fragment;
 
 import java.util.ArrayList;
 import java.util.List;
