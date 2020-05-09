@@ -5,17 +5,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.icu.text.DateFormat;
 import android.icu.text.SimpleDateFormat;
-import android.location.Address;
-import android.location.Geocoder;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,17 +22,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.mefistophel.lessonsecond_geekbrains.data_weather.DataWeather;
-import com.mefistophel.lessonsecond_geekbrains.data_weather.TempForHour;
-import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.Observer;
-import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.Publisher;
-import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.PublisherGetter;
+import com.mefistophel.lessonsecond_geekbrains.observer.Observer;
+import com.mefistophel.lessonsecond_geekbrains.observer.Publisher;
+import com.mefistophel.lessonsecond_geekbrains.observer.PublisherGetter;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements PublisherGetter, Observer {

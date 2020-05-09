@@ -2,7 +2,6 @@ package com.mefistophel.lessonsecond_geekbrains;
 
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -16,9 +15,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.android.material.snackbar.Snackbar;
-import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.Observer;
-import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.Publisher;
-import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.PublisherGetter;
+import com.mefistophel.lessonsecond_geekbrains.observer.Observer;
+import com.mefistophel.lessonsecond_geekbrains.observer.Publisher;
+import com.mefistophel.lessonsecond_geekbrains.observer.PublisherGetter;
 
 
 public class CityList extends Fragment implements Observer {
@@ -28,11 +27,9 @@ public class CityList extends Fragment implements Observer {
     public CityList() {
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_city_list, container, false);
     }
 
@@ -45,7 +42,6 @@ public class CityList extends Fragment implements Observer {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-
         publisher = ((PublisherGetter) context).getPublisher();
     }
 

@@ -4,15 +4,18 @@ import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.widget.Toast;
 
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.mefistophel.lessonsecond_geekbrains.RequestWeather;
-import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.Observer;
-import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.Publisher;
-import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.PublisherGetter;
+import com.mefistophel.lessonsecond_geekbrains.observer.Observer;
+import com.mefistophel.lessonsecond_geekbrains.observer.Publisher;
+import com.mefistophel.lessonsecond_geekbrains.observer.PublisherGetter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,9 +24,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.text.DateFormat;
 
-public class DataWeather extends AppCompatActivity implements Observer {
-
-    private DateFormat dateCheckTemp;
+public class DataWeather extends AppCompatActivity {
 
     private String city;
 
@@ -127,14 +128,20 @@ public class DataWeather extends AppCompatActivity implements Observer {
         }
     }
 
-    private void requestDataFromAPI(String coordinates) {
-        requestDataAsync = new RequestDataAsync();
-        requestDataAsync.execute(coordinates);
-    }
-
-    @Override
-    public void updateCity(String text) {
-
+    private void requestDataFromAPI(final String coordinates) {
+//        requestDataAsync = new RequestDataAsync();
+//        requestDataAsync.execute(coordinates);
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                final JSONObject json = RequestWeather.getJSON(coordinates);
+                Message message = handler.obtainMessage();
+                Bundle bundle   = new Bundle();
+                bundle.
+            }
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
     }
 
     class RequestDataAsync extends AsyncTask< Object, Void , JSONObject> {
@@ -172,4 +179,9 @@ public class DataWeather extends AppCompatActivity implements Observer {
          }
     }
 
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message message) {
+        }
+    };
 }
