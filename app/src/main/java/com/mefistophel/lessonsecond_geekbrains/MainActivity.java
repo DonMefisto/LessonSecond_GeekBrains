@@ -51,7 +51,6 @@ public class MainActivity extends AppCompatActivity implements PublisherGetter, 
         setContentView(R.layout.activity_main);
 
         shPreferences = getSharedPreferences(Constants.PREFERENCES, Context.MODE_PRIVATE);
-
         initView();
         setDefaultValue();
     }
@@ -68,15 +67,12 @@ public class MainActivity extends AppCompatActivity implements PublisherGetter, 
         txtTemp.setText("0°");
         txtFeelsLike.setText("0°");
 
-        //default city - Khabarovsk
-        txtCity.setText("Khabarovsk");
-
         publisher.subscribe(MainActivity.this);
 
         if (shPreferences.contains(Constants.PREFERENCES_CITY))
             dataWeather = new DataWeather(shPreferences.getString(Constants.PREFERENCES_CITY, ""), MainActivity.this);
         else
-            dataWeather = new DataWeather("Khabarovsk", MainActivity.this);
+            txtCity.setText("Choose a city to forecast.");
     }
 
     private void initView() {
