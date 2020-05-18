@@ -3,27 +3,25 @@ package com.mefistophel.lessonsecond_geekbrains.data_weather;
 import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
-import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.widget.Toast;
 
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.mefistophel.lessonsecond_geekbrains.RequestWeather;
-import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.Observer;
-import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.Publisher;
-import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.PublisherGetter;
+import com.mefistophel.lessonsecond_geekbrains.observer.Publisher;
+import com.mefistophel.lessonsecond_geekbrains.observer.PublisherGetter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.text.DateFormat;
 
-public class DataWeather extends AppCompatActivity implements Observer {
-
-    private DateFormat dateCheckTemp;
+public final class DataWeather extends AppCompatActivity {
 
     private String city;
 
@@ -42,8 +40,6 @@ public class DataWeather extends AppCompatActivity implements Observer {
 
     private TempForHour[] tempForHours = new TempForHour[24];
 
-    private AsyncTask requestDataAsync;
-
     private Publisher publisher;
 
     public DataWeather(String city, Context context) {
@@ -53,8 +49,10 @@ public class DataWeather extends AppCompatActivity implements Observer {
             this.city = city;
             requestDataFromAPI("lat" + latCity + "&" + "lon" + lonCity);
         }
-        else
-            Toast.makeText(context, "Unfortunately, the city was not found. Check the spelling of the city and try again.", Toast.LENGTH_LONG);
+        else{
+            this.city = "";
+            Toast.makeText(context, "Unfortunately, the city was not found. Check the spelling of the city and try again.", Toast.LENGTH_LONG).show();
+        }
     }
 
     public String getCity() {
@@ -127,49 +125,53 @@ public class DataWeather extends AppCompatActivity implements Observer {
         }
     }
 
-    private void requestDataFromAPI(String coordinates) {
-        requestDataAsync = new RequestDataAsync();
-        requestDataAsync.execute(coordinates);
+    private void requestDataFromAPI(final String coordinates) {
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                final String forecast = RequestWeather.getJSON(coordinates);
+                Message message = handler.obtainMessage();
+                Bundle bundle   = new Bundle();
+                bundle.putString("Forecast", forecast);
+                message.setData(bundle);
+                handler.sendMessage(message);
+            }
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
     }
 
-    @Override
-    public void updateCity(String text) {
-
-    }
-
-    class RequestDataAsync extends AsyncTask< Object, Void , JSONObject> {
-        @Override
-        protected JSONObject doInBackground(Object... coordinates) {
-            final JSONObject json = RequestWeather.getJSON(String.valueOf(coordinates[0]));
-            return json;
-        }
-
-        @Override
-        protected void onPostExecute(JSONObject json) {
-            super.onPostExecute(json);
-
-            try {
+    private void fillValues(String forecast) {
+        try {
+            synchronized (DataWeather.this) {
+                JSONObject json = new JSONObject(forecast);
                 JSONObject factJson = json.getJSONObject("fact");
-                actualTemp      = factJson.getInt("temp") + "°";
-                tempFeelsLike   = factJson.getInt("feels_like") + "°";
-                condition       = factJson.getString("condition");
+                actualTemp = factJson.getInt("temp") + "°";
+                tempFeelsLike = factJson.getInt("feels_like") + "°";
+                condition = factJson.getString("condition");
 
-                windSpeed       = factJson.getInt("wind_speed") + "m/s";
-                windGust        = factJson.getInt("wind_gust") + "m/s";
-                windDirection   = factJson.getString("wind_dir");
+                windSpeed = factJson.getInt("wind_speed") + "m/s";
+                windGust = factJson.getInt("wind_gust") + "m/s";
+                windDirection = factJson.getString("wind_dir");
 
-                pressureMM      = factJson.getInt("pressure_mm") + "mm";
+                pressureMM = factJson.getInt("pressure_mm") + "mm";
 
                 JSONArray forecasts = json.getJSONArray("forecasts");
                 JSONArray hours = forecasts.getJSONObject(0).getJSONArray("hours");
                 for (int i = 0; i < hours.length(); i++)
                     tempForHours[i] = new TempForHour(hours.getJSONObject(i).getString("hour") + ":00", hours.getJSONObject(i).getInt("temp") + "°", hours.getJSONObject(i).getString("condition"));
-
-                publisher.notify(city);
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
-         }
+            publisher.notify(city);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message message) {
+            String forecast = message.getData().getString("Forecast");
+            fillValues(forecast);
+        }
+    };
 }

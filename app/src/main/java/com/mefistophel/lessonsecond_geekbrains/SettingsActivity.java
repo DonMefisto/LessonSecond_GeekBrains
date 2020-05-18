@@ -5,9 +5,9 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.Observer;
-import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.Publisher;
-import com.mefistophel.lessonsecond_geekbrains.observer_city_fragment.PublisherGetter;
+import com.mefistophel.lessonsecond_geekbrains.observer.Observer;
+import com.mefistophel.lessonsecond_geekbrains.observer.Publisher;
+import com.mefistophel.lessonsecond_geekbrains.observer.PublisherGetter;
 
 public class SettingsActivity extends AppCompatActivity implements PublisherGetter, Observer {
 
